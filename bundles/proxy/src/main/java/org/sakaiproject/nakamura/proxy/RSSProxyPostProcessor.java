@@ -154,8 +154,6 @@ public class RSSProxyPostProcessor implements ProxyPostProcessor {
       checkedElements.put("title", false);
       checkedElements.put("link", false);
       checkedElements.put("item", false);
-      checkedElements.put("title", false);
-      checkedElements.put("link", false);
 
       XMLOutputFactory outputFactory = new WstxOutputFactory();
       writer = outputFactory.createXMLEventWriter(out);
@@ -168,7 +166,7 @@ public class RSSProxyPostProcessor implements ProxyPostProcessor {
         if (!isValid) {
           if (e.getEventType() == XMLEvent.START_ELEMENT) {
             StartElement el = e.asStartElement();
-            String name = el.getName().toString().toLowerCase();
+            String name = el.getName().getLocalPart().toLowerCase();
             if (checkedElements.containsKey(name)) {
               checkedElements.put(name, true);
             }
