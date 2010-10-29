@@ -4,7 +4,7 @@
 # don't forget to trust the svn certificate permanently: svn info https://source.sakaiproject.org/svn
 
 export K2_TAG="HEAD"
-export S2_TAG="tags/sakai-2.8.0-a01"
+export S2_TAG="tags/sakai-2.8.0-a02"
 export UX_TAG="HEAD"
 
 # Treat unset variables as an error when performing parameter expansion
@@ -13,14 +13,14 @@ set -o nounset
 # environment
 export PATH=/usr/local/bin:$PATH
 export BUILD_DIR="/home/hybrid"
-export JAVA_HOME=/opt/jdk1.6.0_21
+export JAVA_HOME=/opt/jdk1.6.0_22
 export PATH=$JAVA_HOME/bin:${PATH}
 export MAVEN_HOME=/usr/local/apache-maven-2.2.1
 export M2_HOME=/usr/local/apache-maven-2.2.1
 export PATH=$MAVEN_HOME/bin:${PATH}
 export MAVEN_OPTS="-Xmx512m -XX:MaxPermSize=256m"
 export JAVA_OPTS="-server -Xmx1024m -XX:MaxPermSize=512m -Djava.awt.headless=true -Dsun.lang.ClassLoader.allowArraySyntax=true -Dorg.apache.jasper.compiler.Parser.STRICT_QUOTE_ESCAPING=false -Dsakai.demo=true -Dsakai.cookieName=SAKAI2SESSIONID"
-export K2_OPTS="-server -Xmx512m -XX:MaxPermSize=128m -Djava.awt.headless=true"
+export K2_OPTS="-server -Xmx1024m -XX:MaxPermSize=256m -Djava.awt.headless=true"
 BUILD_DATE=`date "+%D %R"`
 
 # get some shell scripting setup out of the way...
@@ -55,14 +55,19 @@ set -o errexit
 
 # clean previous builds
 cd $BUILD_DIR
-if [ $1 == "clean" ]
+if [ $# -gt 0 ]
 then
-    echo "Starting clean build..."
-    rm -rf sakai
-    rm -rf sakai2-demo
-    rm -rf 3akai-ux
-    rm -rf sakai3
-    rm -rf ~/.m2/repository/org/sakaiproject
+    if [ $1 == "clean" ]
+    then
+        echo "Starting clean build..."
+        rm -rf sakai
+        rm -rf sakai2-demo
+        rm -rf 3akai-ux
+        rm -rf sakai3
+        rm -rf ~/.m2/repository/org/sakaiproject
+    else
+        echo "Starting incremental build..."
+    fi
 else
     echo "Starting incremental build..."
 fi
@@ -147,7 +152,9 @@ else
     # configure sakai 2 instance
     cd $BUILD_DIR
     # change default tomcat listener port numbers
-    cp -f server.xml sakai2-demo/conf/server.xml 
+    perl -pwi -e 's/\<Connector\s+port\="8080"/\<Connector port\="8880"/gi' sakai2-demo/conf/server.xml
+    perl -pwi -e 's/\<Connector\s+port\="8009"/\<Connector port\="8809"/gi' sakai2-demo/conf/server.xml
+    # sakai.properties
     echo "ui.service = $S2_TAG on HSQLDB" >> sakai2-demo/sakai/sakai.properties
     echo "version.sakai = $REPO_REV" >> sakai2-demo/sakai/sakai.properties
     echo "version.service = Built: $BUILD_DATE" >> sakai2-demo/sakai/sakai.properties
